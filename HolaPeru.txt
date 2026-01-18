@@ -3,3 +3,5 @@ command+shif+. > Ocultar o mostrar archivos ocultos es Mac.
 Mi nombre es Fidel y tengo 26 años de edad.
 
 Me gusta perder mi tiempo en reemplas de aprender a programar con Platzi.
+
+Mi profesion es ingeniero de sistemas.
