@@ -5,3 +5,6 @@ Mi nombre es Fidel y tengo 26 años de edad.
 Me gusta perder mi tiempo en reemplas de aprender a programar con Platzi.
 
 Mi profesion es ingeniero de sistemas.
+
+Termine mi carrera en el 2023 en el mes de noviembre.
+
