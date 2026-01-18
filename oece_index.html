@@ -1,0 +1,2074 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Simulador Examen OECE - Compradores Públicos</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg: #0f172a;
+      --bg-soft: #111827;
+      --card: #020617;
+      --primary: #38bdf8;
+      --primary-soft: rgba(56,189,248,0.12);
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --danger: #f97373;
+      --success: #4ade80;
+      --border: #1f2937;
+      --warning: #facc15;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #1e293b 0, #020617 55%);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    .app {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px 16px 40px;
+    }
+
+    header {
+      margin-bottom: 16px;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 1.6rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    header h1 span.badge {
+      font-size: 0.7rem;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--primary);
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    header p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .card {
+      background: linear-gradient(145deg, #020617, #020617);
+      border-radius: 18px;
+      padding: 16px 18px;
+      border: 1px solid var(--border);
+      box-shadow: 0 18px 45px rgba(15,23,42,0.9);
+    }
+
+    .config {
+      margin-bottom: 18px;
+    }
+
+    .config h2 {
+      margin: 0 0 8px;
+      font-size: 1.1rem;
+    }
+
+    .config p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .config-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-top: 10px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .config-pill {
+      background: var(--bg-soft);
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .config-pill strong {
+      color: var(--primary);
+    }
+
+    button.primary {
+      background: var(--primary);
+      color: #0b1120;
+      border-radius: 999px;
+      border: none;
+      padding: 10px 22px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 12px 30px rgba(56,189,248,0.4);
+      transition: transform 0.08s ease, box-shadow 0.08s ease, opacity 0.15s ease;
+    }
+
+    button.primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
+    }
+
+    button.primary:not(:disabled):hover {
+      transform: translateY(-1px);
+      box-shadow: 0 14px 40px rgba(56,189,248,0.5);
+    }
+
+    button.secondary {
+      background: transparent;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      padding: 8px 18px;
+      font-size: 0.85rem;
+      color: var(--muted);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.1s ease, color 0.1s ease, border-color 0.1s ease;
+    }
+
+    button.secondary:hover {
+      background: #020617;
+      color: var(--text);
+      border-color: var(--primary-soft);
+    }
+
+    main {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 260px minmax(0,1fr);
+      gap: 14px;
+    }
+
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: minmax(0,1fr);
+      }
+    }
+
+    .sidebar {
+      background: var(--bg-soft);
+      border-radius: 16px;
+      padding: 14px 12px;
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .timer-card {
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: radial-gradient(circle at top left, rgba(56,189,248,0.22), transparent 55%);
+      border: 1px solid rgba(56,189,248,0.35);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .timer-label {
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .timer-value {
+      font-size: 1.2rem;
+      font-variant-numeric: tabular-nums;
+      font-weight: 600;
+    }
+
+    .timer-warning {
+      color: var(--warning);
+    }
+
+    .timer-danger {
+      color: var(--danger);
+    }
+
+    .nav-title {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .question-nav {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 4px;
+      max-height: 280px;
+      overflow: auto;
+      padding-right: 4px;
+    }
+
+    .q-badge {
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      font-size: 0.78rem;
+      padding: 4px 0;
+      text-align: center;
+      cursor: pointer;
+      color: var(--muted);
+      background: #020617;
+      transition: background 0.1s ease, border-color 0.1s ease, color 0.1s ease, transform 0.05s;
+    }
+
+    .q-badge:hover {
+      transform: translateY(-0.5px);
+    }
+
+    .q-badge.answered {
+      background: var(--primary-soft);
+      border-color: rgba(56,189,248,0.5);
+      color: var(--primary);
+    }
+
+    .q-badge.current {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 1px rgba(56,189,248,0.5);
+    }
+
+    .question-card {
+      background: var(--card);
+      border-radius: 16px;
+      padding: 16px 18px;
+      border: 1px solid var(--border);
+      min-height: 260px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .question-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 8px;
+    }
+
+    .question-number {
+      font-size: 0.95rem;
+      color: var(--muted);
+    }
+
+    .question-progress {
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 5px;
+      border-radius: 999px;
+      background: #020617;
+      overflow: hidden;
+      margin-top: 4px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary), #a855f7);
+      width: 0%;
+      transition: width 0.15s ease;
+    }
+
+    .question-text {
+      margin-top: 4px;
+      font-size: 0.98rem;
+      line-height: 1.4;
+    }
+
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .option {
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      padding: 8px 10px;
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+      cursor: pointer;
+      background: #020617;
+      transition: border-color 0.1s ease, background 0.1s ease, transform 0.05s;
+      font-size: 0.92rem;
+    }
+
+    .option:hover {
+      border-color: var(--primary-soft);
+      background: #020617;
+    }
+
+    .option input[type="radio"] {
+      margin-top: 4px;
+      accent-color: var(--primary);
+      cursor: pointer;
+    }
+
+    .option span.label {
+      cursor: pointer;
+    }
+
+    .option.selected {
+      border-color: var(--primary);
+      background: radial-gradient(circle at top left, rgba(56,189,248,0.18), #020617 55%);
+    }
+
+    .question-footer {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 12px;
+      gap: 8px;
+    }
+
+    .question-footer button {
+      flex: 1;
+    }
+
+    .question-footer button:first-child {
+      justify-content: flex-start;
+    }
+
+    .question-footer button:last-child {
+      justify-content: flex-end;
+    }
+
+    .question-footer button:only-child {
+      flex: 0 0 auto;
+      min-width: 130px;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .results-card {
+      margin-top: 8px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px,1fr));
+      gap: 12px;
+    }
+
+    .pill {
+      border-radius: 12px;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      background: #020617;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    .pill strong {
+      display: block;
+      font-size: 0.9rem;
+      color: var(--text);
+    }
+
+    .pill.level-ok {
+      border-color: rgba(74,222,128,0.4);
+      background: radial-gradient(circle at top left, rgba(74,222,128,0.18), #022c22 55%);
+    }
+
+    .pill.level-fail {
+      border-color: rgba(248,113,113,0.4);
+      background: radial-gradient(circle at top left, rgba(248,113,113,0.18), #450a0a 55%);
+    }
+
+    .history-card {
+      margin-top: 16px;
+      background: var(--bg-soft);
+      border-radius: 16px;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+    }
+
+    .history-card h3 {
+      margin: 0 0 6px;
+      font-size: 0.95rem;
+    }
+
+    .history-card p {
+      margin: 0 0 8px;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.78rem;
+    }
+
+    th, td {
+      padding: 6px 4px;
+      border-bottom: 1px solid rgba(31,41,55,0.9);
+      text-align: left;
+    }
+
+    th {
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    .tag {
+      border-radius: 999px;
+      padding: 2px 8px;
+      font-size: 0.75rem;
+      border: 1px solid rgba(148,163,184,0.7);
+      color: var(--muted);
+      display: inline-block;
+    }
+
+    .tag.ok {
+      border-color: rgba(74,222,128,0.7);
+      color: var(--success);
+    }
+
+    .tag.fail {
+      border-color: rgba(248,113,113,0.7);
+      color: var(--danger);
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .hint {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>
+      Simulador de Examen OECE
+      <span class="badge">Ley 32069 · D.S. 009-2025-EF</span>
+    </h1>
+    <p>Simula un examen real de certificación de compradores públicos: 72 preguntas, 120 minutos, banco casuístico y registro en localStorage.</p>
+  </header>
+
+  <section class="card config" id="configSection">
+    <h2>Configuración del simulacro</h2>
+    <p>Al iniciar se generará un examen de <strong>72 preguntas</strong> tomadas aleatoriamente del banco. En cada nuevo intento se priorizarán preguntas que no hayas visto antes.</p>
+    <div class="config-grid">
+      <div class="config-pill">Duración: <strong>120 minutos</strong></div>
+      <div class="config-pill">Preguntas por intento: <strong>72</strong></div>
+      <div class="config-pill">Banco precargado: <strong>90 preguntas casuísticas</strong></div>
+      <button class="primary" id="startBtn">
+        ▶ Iniciar examen
+      </button>
+    </div>
+    <p class="hint">
+      Clasificación: Básico ≥ 30 · Intermedio ≥ 43 · Avanzado ≥ 58 (sobre 100).
+    </p>
+  </section>
+
+  <main class="layout">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebarSection">
+      <div class="timer-card">
+        <div class="timer-label">Tiempo restante</div>
+        <div class="timer-value" id="timerDisplay">--:--</div>
+        <div class="hint" id="timerHint">Inicia el examen para activar el cronómetro.</div>
+      </div>
+
+      <div>
+        <div class="nav-title">Navegación de preguntas</div>
+        <div class="question-nav" id="questionNav"></div>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:6px; margin-top:4px;">
+        <button class="primary" id="finishBtn" disabled>✔ Finalizar examen</button>
+        <button class="secondary" id="restartBtn" disabled>⟳ Nuevo intento</button>
+      </div>
+    </aside>
+
+    <!-- Question Area -->
+    <section id="examSection" class="question-card">
+      <div class="question-header">
+        <div class="question-number" id="questionNumber">Pregunta -</div>
+        <div class="question-progress" id="questionProgress">Respondidas: 0 / 72</div>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <div class="question-text" id="questionText">
+        Pulsa “Iniciar examen” para comenzar el simulacro.
+      </div>
+      <div class="options" id="optionsContainer"></div>
+
+      <div class="question-footer" id="questionFooter">
+        <button class="secondary" id="prevBtn" disabled>← Anterior</button>
+        <button class="secondary" id="nextBtn" disabled>Siguiente →</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- Results -->
+  <section class="card" id="resultsSection" style="margin-top:10px; display:none;">
+    <h2>Resultado del simulacro</h2>
+    <p id="resultSummary"></p>
+    <div class="results-card">
+      <div class="pill" id="scorePill">
+        <strong>Puntaje obtenido</strong>
+        <span id="scoreValue">--</span>
+      </div>
+      <div class="pill" id="levelPill">
+        <strong>Nivel</strong>
+        <span id="levelValue">--</span>
+      </div>
+      <div class="pill">
+        <strong>Respuestas correctas</strong>
+        <span id="correctValue">--</span>
+      </div>
+      <div class="pill">
+        <strong>Tiempo utilizado</strong>
+        <span id="timeUsedValue">--</span>
+      </div>
+    </div>
+    <p class="hint" style="margin-top:10px;">
+      Puedes revisar tu histórico de intentos en el panel inferior. Cada intento queda guardado en tu navegador mediante <strong>localStorage</strong>.
+    </p>
+  </section>
+
+  <!-- History -->
+  <section class="history-card" id="historySection">
+    <h3>Historial de intentos</h3>
+    <p>Los últimos intentos se guardan en tu navegador. Si borras la caché/localStorage, se perderán.</p>
+    <div style="overflow:auto;">
+      <table>
+        <thead>
+          <tr>
+            <th>Fecha y hora</th>
+            <th>Puntaje</th>
+            <th>Nivel</th>
+            <th>Correctas</th>
+            <th>Tiempo (min)</th>
+          </tr>
+        </thead>
+        <tbody id="historyTableBody">
+          <tr><td colspan="5" class="muted">Aún no hay intentos registrados.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+<script>
+  // ==============================
+  // CONFIGURACIÓN BÁSICA
+  // ==============================
+  const EXAM_DURATION_SECONDS = 120 * 60; // 120 minutos
+  const QUESTIONS_PER_EXAM = 72;
+
+  // ==============================
+  // BANCO DE PREGUNTAS (CASUÍSTICAS)
+  // Nota: Se precargan 90 preguntas.
+  // Puedes ampliar hasta 500 siguiendo el mismo formato.
+  // ==============================
+
+  const questionBank = [
+    // --- Actuaciones preparatorias / CMN / PAC / DEC / área usuaria ---
+    {
+      id: 1,
+      text: "En una entidad, el área usuaria formula un requerimiento para contratar un servicio de mantenimiento de vehículos, pero dicha necesidad no está incluida en el Cuadro Multianual de Necesidades (CMN) vigente. ¿Qué corresponde hacer antes de continuar con la contratación?",
+      options: [
+        "Continuar igual, porque el CMN es solo referencial.",
+        "Solicitar a la Oficina de Presupuesto que apruebe el requerimiento sin modificar el CMN.",
+        "Modificar el CMN e incorporar la necesidad, para luego remitir el requerimiento a la DEC.",
+        "Enviar el requerimiento directamente a Perú Compras para que lo incluya en una compra corporativa."
+      ],
+      correctIndex: 2
+    },
+    {
+      id: 2,
+      text: "El área usuaria de una entidad envía un requerimiento de compra de laptops a la dependencia encargada de las contrataciones (DEC). ¿Quién es responsable de verificar que la necesidad esté debidamente registrada y aprobada en el CMN antes de seguir con el proceso?",
+      options: [
+        "La Oficina de Control Institucional.",
+        "La dependencia encargada de las contrataciones (DEC).",
+        "El área usuaria.",
+        "La Dirección General de Abastecimiento (DGA)."
+      ],
+      correctIndex: 1
+    },
+    {
+      id: 3,
+      text: "En una entidad, la DEC detecta que un área usuaria pretende dividir la contratación de un mismo tipo de servicio en varios procesos pequeños para usar contratos menores y evitar un procedimiento competitivo. ¿Cómo califica esta conducta la Ley 32069?",
+      options: [
+        "Es una práctica permitida para acelerar la ejecución del gasto.",
+        "Es una forma de fraccionamiento prohibido de la contratación.",
+        "Es una modalidad válida de optimización del presupuesto.",
+        "Solo es una falta leve sin mayor consecuencia."
+      ],
+      correctIndex: 1
+    },
+    {
+      id: 4,
+      text: "Un área usuaria elabora su requerimiento incluyendo la marca específica de un equipo, sin justificación técnica, lo cual reduce la competencia. ¿Qué principio se estaría vulnerando principalmente?",
+      options: [
+        "Principio de presunción de veracidad.",
+        "Principio de sostenibilidad.",
+        "Principio de libertad de concurrencia y competencia.",
+        "Principio de causalidad."
+      ],
+      correctIndex: 2
+    },
+    {
+      id: 5,
+      text: "La DEC ha segmentado las contrataciones del PAC del CMN y detecta un conjunto de compras pequeñas y frecuentes del mismo bien estándar. ¿Qué enfoque es más coherente con el valor por dinero?",
+      options: [
+        "Mantener las compras separadas como contratos menores.",
+        "Agrupar las compras en un solo proceso o evaluar el uso de catálogos de acuerdo marco.",
+        "Suspender todo proceso hasta el siguiente año fiscal.",
+        "Encargar todas las compras a otra entidad sin sustento."
+      ],
+      correctIndex: 1
+    },
+    {
+      id: 6,
+      text: "En la etapa de actuaciones preparatorias, la DEC detecta que el mercado ofrece diferentes tecnologías para un bien requerido. Antes de definir la estrategia de contratación decide realizar consultas al mercado y publicar un anuncio de contratación futura. ¿Qué está aplicando principalmente?",
+      options: [
+        "Interacción con el mercado para mejorar la estrategia de contratación.",
+        "La fase de ejecución contractual.",
+        "Un procedimiento de selección no competitivo.",
+        "Un recurso de apelación preventivo."
+      ],
+      correctIndex: 0
+    },
+    {
+      id: 7,
+      text: "El expediente de contratación para la compra de equipos médicos fue elaborado por la DEC y contiene el requerimiento, el estudio de mercado y la estrategia de contratación. ¿Quién aprueba este expediente de contratación de acuerdo con el Reglamento?",
+      options: [
+        "El titular de la entidad siempre.",
+        "La autoridad de la gestión administrativa de la entidad.",
+        "La DGA del MEF.",
+        "Cualquier funcionario de la DEC."
+      ],
+      correctIndex: 1
+    },
+    {
+      id: 8,
+      text: "En una pequeña municipalidad, el mismo servidor que formula el requerimiento también califica ofertas y otorga la conformidad. La entidad no ha designado áreas diferenciadas. ¿Cuál es el riesgo principal frente a la Ley General de Contrataciones Públicas?",
+      options: [
+        "Riesgo de conflicto de intereses por falta de separación de funciones.",
+        "Riesgo de valor por dinero muy alto.",
+        "Riesgo de no poder usar PLADICOP.",
+        "No existe ningún riesgo mientras se cumpla el plazo."
+      ],
+      correctIndex: 0
+    },
+    {
+      id: 9,
+      text: "Un área usuaria requiere un servicio especializado de consultoría y propone en el requerimiento requisitos técnicos que solo una empresa local cumple, sin sustento. La DEC advierte el problema. ¿Qué debe hacer la DEC?",
+      options: [
+        "Aceptar el requerimiento tal como está, porque la necesidad es prioritaria.",
+        "Modificar el requerimiento eliminando exigencias desproporcionadas y solicitar la no objeción del área usuaria.",
+        "Rechazar el requerimiento y archivar la contratación.",
+        "Pedir a Perú Compras que diseñe las bases para ese proveedor local."
+      ],
+      correctIndex: 1
+    },
+    {
+      id: 10,
+      text: "Una entidad ha planificado la contratación de un servicio de limpieza por todo el año. En la fase de actuaciones preparatorias se plantea incluir cláusulas de sostenibilidad ambiental (uso de insumos biodegradables) razonablemente disponibles en el mercado. ¿Qué enfoque de la Ley se promueve principalmente?",
+      options: [
+        "Enfoque de gobernanza.",
+        "Enfoque de gestión por resultados.",
+        "Enfoque de sostenibilidad de las contrataciones públicas.",
+        "Enfoque de profesionalización."
+      ],
+      correctIndex: 2
+    },
+
+    // --- Roles: DGA, OECE, Perú Compras, entidades contratantes, compradores públicos, evaluadores ---
+    {
+      id: 11,
+      text: "Una entidad consulta sobre la interpretación de un artículo específico de la Ley 32069 y su Reglamento. ¿Qué órgano tiene la función de emitir opinión vinculante en el marco del Sistema Nacional de Abastecimiento?",
+      options: [
+        "La Contraloría General de la República.",
+        "La Dirección General de Abastecimiento (DGA).",
+        "El Tribunal Constitucional.",
+        "La Central de Compras Públicas (Perú Compras)."
+      ],
+      correctIndex: 1
+    },
+    {
+      id: 12,
+      text: "Una entidad solicita asistencia técnica para un proceso complejo de contratación de obras. ¿Cuál es el organismo especializado responsable de brindar dicha asistencia y supervisar la contratación pública eficiente?",
+      options: [
+        "El OECE.",
+        "La DGA.",
+        "El Congreso de la República.",
+        "El Tribunal de Contrataciones Públicas."
+      ],
+      correctIndex: 0
+    },
+    {
+      id: 13,
+      text: "El OECE realiza una supervisión selectiva de un procedimiento de selección y detecta riesgos graves que afectan la finalidad de la contratación. ¿Qué medida puede adoptar según la Ley 32069?",
+      options: [
+        "Ordenar directamente la nulidad del contrato.",
+        "Suspender el procedimiento de selección mientras dure la supervisión.",
+        "Cambiar al titular de la entidad.",
+        "Declarar desierto el procedimiento sin sustento."
+      ],
+      correctIndex: 1
+    },
+    {
+      id: 14,
+      text: "Una entidad requiere adquirir bienes de uso masivo estandarizados que ya se encuentran en catálogos electrónicos de acuerdo marco. ¿Qué entidad diseña, gestiona y administra esos catálogos?",
+      options: [
+        "La Dirección General de Abastecimiento (DGA).",
+        "El OECE.",
+        "Perú Compras.",
+        "El Tribunal de Contrataciones Públicas."
+      ],
+      correctIndex: 2
+    },
+    {
+      id: 15,
+      text: "Respecto de los compradores públicos, ¿cuál de las siguientes afirmaciones es correcta según el Reglamento de la Ley 32069?",
+      options: [
+        "No requieren certificación alguna.",
+        "Son los funcionarios y servidores de la DEC responsables de la gestión de las contrataciones y deben estar certificados por el OECE.",
+        "Son únicamente los jefes de logística de las entidades contratantes.",
+        "Solo existen en los gobiernos regionales."
+      ],
+      correctIndex: 1
+    },
+    {
+      id: 16,
+      text: "Para que un servidor de la DEC pueda ser designado como oficial de compra o integrar un comité de selección, ¿qué requisito de certificación debe cumplir de acuerdo con el Reglamento?",
+      options: [
+        "Contar como mínimo con nivel básico de certificación.",
+        "No se exige ningún nivel de certificación.",
+        "Contar con certificación de nivel intermedio o avanzado.",
+        "Haber aprobado únicamente un curso de ética pública."
+      ],
+      correctIndex: 2
+    },
+    {
+      id: 17,
+      text: "La autoridad de la gestión administrativa de una entidad es responsable, entre otras funciones, de autorizar determinadas prestaciones adicionales y declarar nulidades de procedimientos. ¿Cuál de las siguientes opciones describe mejor a esa autoridad?",
+      options: [
+        "La máxima autoridad política de la entidad.",
+        "La más alta autoridad de la gestión administrativa, como la gerencia general o secretaría general, según el tipo de entidad.",
+        "El jefe de la oficina de presupuesto.",
+        "El presidente del consejo directivo."
+      ],
+      correctIndex: 1
+    },
+    {
+      id: 18,
+      text: "En el caso de una universidad pública, ¿quién se considera entidad contratante para efectos de la Ley General de Contrataciones Públicas?",
+      options: [
+        "Solo la facultad de economía.",
+        "La universidad pública como persona jurídica, incluyendo sus programas y proyectos.",
+        "Los estudiantes de manera individual.",
+        "Únicamente el rector."
+      ],
+      correctIndex: 1
+    },
+    {
+      id: 19,
+      text: "Una entidad requiere supervisar los supuestos excluidos del ámbito de la Ley 32069, como ciertas contrataciones bajo regímenes especiales. ¿Qué organismo tiene esa función de supervisión de supuestos excluidos?",
+      options: [
+        "La DGA.",
+        "Perú Compras.",
+        "El Tribunal Constitucional.",
+        "El OECE."
+      ],
+      correctIndex: 3
+    },
+    {
+      id: 20,
+      text: "El Tribunal de Contrataciones Públicas emite una sala plena con criterios que deben ser aplicados por sus salas al resolver controversias. ¿Cómo se denomina esta facultad según la Ley 32069?",
+      options: [
+        "Opiniones no vinculantes.",
+        "Precedentes de observancia obligatoria.",
+        "Resoluciones consultivas.",
+        "Lineamientos administrativos internos."
+      ],
+      correctIndex: 1
+    },
+
+    // --- RNP, proveedores, FUP, impedimentos ---
+    {
+      id: 21,
+      text: "Un proveedor desea participar en un procedimiento de selección para la ejecución de una obra pública. ¿Qué requisito general debe cumplir para poder ser postor según la Ley 32069?",
+      options: [
+        "Estar inscrito en el RNP con inscripción vigente y no estar incurso en impedimentos.",
+        "Solo tener RUC activo.",
+        "Contar con licencia municipal de funcionamiento.",
+        "Tener un capital social mínimo de 1 000 000 de soles."
+      ],
+      correctIndex: 0
+    },
+    {
+      id: 22,
+      text: "Un proveedor se inscribió en el RNP hace tres años y cambió de representante legal y domicilio fiscal sin actualizar esa información. ¿Qué consecuencia puede generar esa omisión?",
+      options: [
+        "La suspensión temporal de su inscripción en el RNP por falta de actualización.",
+        "La anulación automática de sus contratos vigentes.",
+        "No hay consecuencia mientras entregue los bienes.",
+        "La suspensión de la entidad contratante."
+      ],
+      correctIndex: 0
+    },
+    {
+      id: 23,
+      text: "La Ficha Única de Proveedor (FUP) contiene información relevante para la evaluación en los procedimientos de selección. ¿Cuál de las siguientes afirmaciones es correcta?",
+      options: [
+        "La FUP solo contiene los datos básicos del RUC del proveedor.",
+        "La FUP incluye información sobre contratos, penalidades, sanciones y experiencia, y sustituye la obligación de presentar varios documentos en la oferta.",
+        "La FUP es de uso interno del proveedor y no la usa la entidad.",
+        "La FUP solo es obligatoria para entidades del Gobierno Nacional."
+      ],
+      correctIndex: 1
+    },
+    {
+      id: 24,
+      text: "Un proveedor está inscrito en el Registro de Deudores Alimentarios Morosos (REDAM). Desea postular a una contratación pública. ¿Qué condición señala el Reglamento para que no le aplique el impedimento?",
+      options: [
+        "Que presente una declaración jurada indicando que pagará en el futuro.",
+        "Que acredite el pago de la deuda o la autorización de descuento para el cumplimiento de la pensión alimenticia.",
+        "Que se comprometa a no solicitar adelantos.",
+        "Que participe en consorcio con otro proveedor."
+      ],
+      correctIndex: 1
+    },
+    {
+      id: 25,
+      text: "Una empresa fue sancionada con inhabilitación definitiva por el Tribunal de Contrataciones Públicas. Sus principales socios crean una nueva empresa con el mismo giro y participan en un procedimiento de selección. ¿Qué tipo de impedimento resultaría aplicable?",
+      options: [
+        "Ningún impedimento, es una persona jurídica distinta.",
+        "Impedimento derivado de pertenecer al mismo grupo económico o de simulación para eludir la sanción.",
+        "Impedimento solo para contratos de obras.",
+        "Impedimento solo si participan en consultorías."
+      ],
+      correctIndex: 1
+    },
+    {
+      id: 26,
+      text: "Un funcionario de la entidad que participó directamente en la determinación del requerimiento de un proceso de selección desea presentarse como subcontratista de uno de los postores. ¿Cuál es la regla según la Ley 32069?",
+      options: [
+        "Puede participar si firma una declaración de ética.",
+        "Está impedido de participar en ese proceso de contratación.",
+        "Solo puede participar si el monto es menor a 1 UIT.",
+        "Puede participar solo como proveedor principal."
+      ],
+      correctIndex: 1
+    },
+    {
+      id: 27,
+      text: "El ex gerente general de una entidad desea contratar con la misma entidad como proveedor de servicios de consultoría, dos meses después de dejar el cargo. Según la Ley 32069, ¿qué aplica?",
+      options: [
+        "No existe impedimento luego de cesar en el cargo.",
+        "Existe un impedimento temporal para contratar con la entidad por un plazo de seis meses después de la culminación del cargo.",
+        "Solo puede contratar mediante contratación directa.",
+        "Debe esperar cinco años para contratar."
+      ],
+      correctIndex: 1
+    },
+    {
+      id: 28,
+      text: "Un proveedor consulta si puede participar en un procedimiento de selección sin estar inscrito en el RNP, dado que desea contratar por un monto menor a 1 UIT. ¿Qué establece el Reglamento?",
+      options: [
+        "Debe inscribirse siempre, sin excepción.",
+        "No requiere inscripción en el RNP si el monto es igual o menor a 1 UIT.",
+        "Solo requiere inscripción si es extranjero.",
+        "Debe inscribirse solo si se trata de una obra."
+      ],
+      correctIndex: 1
+    },
+    {
+      id: 29,
+      text: "Un proveedor ejecutor de obras solicita incrementar su capacidad máxima de contratación. ¿Qué tipo de procedimiento aplica el RNP para evaluar esta solicitud?",
+      options: [
+        "Procedimiento de aprobación automática.",
+        "Procedimiento de evaluación previa con silencio administrativo negativo.",
+        "No existe procedimiento de aumento de capacidad.",
+        "Procedimiento de evaluación previa con silencio positivo."
+      ],
+      correctIndex: 1
+    },
+    {
+      id: 30,
+      text: "Durante una fiscalización posterior, el OECE verifica que un proveedor presentó documentación falsa para ampliar su capacidad máxima de contratación. ¿Cuál es una consecuencia directa según el Reglamento?",
+      options: [
+        "La nulidad del acto administrativo que aprobó la ampliación y comunicación al TCP para posibles sanciones.",
+        "Solo una amonestación escrita.",
+        "La suspensión de la entidad contratante.",
+        "No hay consecuencia si ya se firmó el contrato."
+      ],
+      correctIndex: 0
+    },
+
+    // --- Modalidades, procedimientos, selección, PLADICOP, Buena Pro, recursos ---
+    {
+      id: 31,
+      text: "Una entidad necesita contratar bienes comunes con ficha técnica aprobada. Desea priorizar el menor precio mediante pujas electrónicas en tiempo real. ¿Qué procedimiento de selección corresponde utilizar?",
+      options: [
+        "Comparación de precios.",
+        "Subasta inversa electrónica.",
+        "Contrato menor.",
+        "Diálogo competitivo."
+      ],
+      correctIndex: 1
+    },
+    {
+      id: 32,
+      text: "La DEC elige la modalidad de compra centralizada para adquirir un conjunto de bienes estratégicos, encargando todas las fases del proceso a otra entidad. ¿Qué busca principalmente esta modalidad?",
+      options: [
+        "Evitar el control del OECE.",
+        "Lograr condiciones más ventajosas y especialización en la contratación.",
+        "Reducir la transparencia del proceso.",
+        "Limitar la competencia."
+      ],
+      correctIndex: 1
+    },
+    {
+      id: 33,
+      text: "Durante la fase de selección, el comité evaluador debe aplicar los factores de evaluación definidos en las bases y respetar los principios de la Ley. ¿Cuál de los siguientes principios se refiere específicamente a maximizar la calidad y sostenibilidad de lo que se contrata, más allá del menor precio?",
+      options: [
+        "Principio de valor por dinero.",
+        "Principio de publicidad.",
+        "Principio de legalidad.",
+        "Principio de causalidad."
+      ],
+      correctIndex: 0
+    },
+    {
+      id: 34,
+      text: "Un postor obtiene la Buena Pro en un procedimiento de selección. Se presenta un recurso de apelación dentro del plazo contra el otorgamiento. ¿La Buena Pro se considera consentida?",
+      options: [
+        "Sí, siempre que el comité lo indique.",
+        "No, la interposición de apelación impide que la Buena Pro quede consentida.",
+        "Sí, si el recurso es presentado por otro postor.",
+        "Sí, porque la Buena Pro se consiente automáticamente."
+      ],
+      correctIndex: 1
+    },
+    {
+      id: 35,
+      text: "La Buena Pro de un procedimiento de selección ha quedado consentida y ningún recurso está pendiente. ¿Cómo se denomina esta situación en términos de firmeza?",
+      options: [
+        "Buena Pro administrativa firme.",
+        "Buena Pro en evaluación.",
+        "Buena Pro precaria.",
+        "Buena Pro provisional."
+      ],
+      correctIndex: 0
+    },
+    {
+      id: 36,
+      text: "Un postor ganador de la Buena Pro no presenta dentro del plazo la documentación requerida para perfeccionar el contrato, sin causa justificada. ¿Qué efecto genera esta conducta?",
+      options: [
+        "La pérdida automática de la Buena Pro.",
+        "La ampliación automática del plazo.",
+        "La obligación de la entidad de negociar directamente.",
+        "No tiene consecuencia ninguna."
+      ],
+      correctIndex: 0
+    },
+    {
+      id: 37,
+      text: "Durante la fase de selección, la entidad debe publicar en PLADICOP información del procedimiento. ¿Cuál es la finalidad principal de este registro digital?",
+      options: [
+        "Sustituir totalmente los expedientes físicos.",
+        "Garantizar la publicidad, transparencia y trazabilidad de las actuaciones.",
+        "Evitar la participación de proveedores extranjeros.",
+        "Facilitar únicamente el control interno."
+      ],
+      correctIndex: 1
+    },
+    {
+      id: 38,
+      text: "Un postor considera que las bases vulneran el principio de competencia y desea impugnarlas. ¿Qué tipo de medio impugnatorio corresponde en la fase de selección de acuerdo con la Ley 32069?",
+      options: [
+        "Recurso de apelación.",
+        "Acción de amparo.",
+        "Recurso de reconsideración.",
+        "Denuncia penal."
+      ],
+      correctIndex: 0
+    },
+    {
+      id: 39,
+      text: "Un recurso de apelación debe acompañarse de una garantía. ¿Qué puede ocurrir con esa garantía si el recurso es declarado improcedente por la instancia competente?",
+      options: [
+        "No se puede ejecutar en ningún caso.",
+        "Debe devolverse siempre al apelante.",
+        "Puede ejecutarse en los supuestos previstos en la normativa como consecuencia de la improcedencia.",
+        "Se transfiere al OECE."
+      ],
+      correctIndex: 2
+    },
+    {
+      id: 40,
+      text: "En un procedimiento de selección, la competencia para resolver un recurso de apelación dependerá, entre otros factores, del valor referencial de la contratación. Para un contrato de gran cuantía, ¿quién suele resolver la apelación?",
+      options: [
+        "La propia entidad convocante.",
+        "El Tribunal de Contrataciones Públicas.",
+        "La Contraloría General.",
+        "El MEF."
+      ],
+      correctIndex: 1
+    },
+
+    // --- Ejecución contractual, modificaciones, penalidades, nulidad, resolución ---
+    {
+      id: 41,
+      text: "Luego de perfeccionado el contrato, la ejecución contractual inicia. El proveedor presenta retrasos injustificados en la entrega de bienes. ¿Qué herramienta tiene la entidad para desincentivar estos incumplimientos sin resolver aún el contrato?",
+      options: [
+        "Aplicar penalidades por mora conforme a lo establecido en el contrato y la normativa.",
+        "Modificar las bases retroactivamente.",
+        "Suspender al área usuaria.",
+        "Anular la Buena Pro."
+      ],
+      correctIndex: 0
+    },
+    {
+      id: 42,
+      text: "La entidad requiere aumentar la cantidad de un bien contratado, manteniendo el mismo objeto y siempre que exista sustento. ¿Cómo se denomina esta modificación contractual?",
+      options: [
+        "Adición o prestación adicional de bienes.",
+        "Ampliación de plazo.",
+        "Resolución del contrato.",
+        "Nulidad de oficio."
+      ],
+      correctIndex: 0
+    },
+    {
+      id: 43,
+      text: "Durante la ejecución de un contrato de servicio, la entidad advierte que parte del objeto deja de ser necesario por una decisión de política pública. Decide reducir formalmente el alcance contratado. ¿De qué figura se trata?",
+      options: [
+        "Prestación adicional.",
+        "Reducción de prestaciones del contrato.",
+        "Suspensión de plazo.",
+        "Convalidación de irregularidades."
+      ],
+      correctIndex: 1
+    },
+    {
+      id: 44,
+      text: "Un contrato de supervisión de obra presenta una causal grave, como colusión entre el contratista y el supervisor. La entidad decide dejar sin efecto el contrato desde su origen. ¿Qué figura aplica?",
+      options: [
+        "Resolución del contrato.",
+        "Nulidad del contrato.",
+        "Anulabilidad simple.",
+        "Ampliación excepcional del contrato."
+      ],
+      correctIndex: 1
+    },
+    {
+      id: 45,
+      text: "La entidad decide resolver el contrato de ejecución de una obra porque el contratista incumple reiteradamente el cronograma, a pesar de haberse aplicado penalidades. ¿Qué efecto principal produce la resolución?",
+      options: [
+        "El contratista queda automáticamente habilitado para otras contrataciones.",
+        "Culmina el contrato y puede proceder la ejecución de garantías y cálculo de saldo de ejecución de obra.",
+        "La entidad pierde todo derecho a penalidades.",
+        "El contrato se convierte en un contrato menor."
+      ],
+      correctIndex: 1
+    },
+    {
+      id: 46,
+      text: "Durante la ejecución contractual de un servicio, el proveedor solicita una ampliación de plazo por causas no imputables a él debidamente acreditadas. ¿Cuál es el tratamiento que debe dar la entidad?",
+      options: [
+        "Negar siempre la solicitud.",
+        "Evaluar la procedencia de ampliar el plazo conforme a la normativa y el contrato.",
+        "Resolver el contrato de inmediato.",
+        "Modificar la base de cálculo de las penalidades sin ampliar plazo."
+      ],
+      correctIndex: 1
+    },
+    {
+      id: 47,
+      text: "La conformidad de la prestación es emitida por el área usuaria. ¿Qué implica esta conformidad respecto del pago al contratista?",
+      options: [
+        "Es un acto irrelevante para el pago.",
+        "Es requisito para que la entidad tramite el pago correspondiente.",
+        "Puede sustituirse por una comunicación verbal.",
+        "Solo aplica en obras, no en bienes ni servicios."
+      ],
+      correctIndex: 1
+    },
+    {
+      id: 48,
+      text: "La entidad detecta un vicio de nulidad en un contrato de bienes, por ejemplo, la vulneración de un impedimento. ¿Qué debe considerar antes de declarar la nulidad de dicho contrato?",
+      options: [
+        "Que no se afecte la finalidad pública de la contratación, evaluando alternativas y las consecuencias de la nulidad.",
+        "Que el proveedor acepte por escrito la nulidad.",
+        "Que el OECE emita una autorización previa.",
+        "Que no exista expediente de contratación."
+      ],
+      correctIndex: 0
+    },
+    {
+      id: 49,
+      text: "Durante la ejecución contractual, la entidad y el proveedor deciden mutuamente poner fin al contrato por razones de oportunidad y conveniencia, sin conflicto. ¿Cómo se denomina esta forma de terminación?",
+      options: [
+        "Resolución por incumplimiento.",
+        "Terminación anticipada por mutuo acuerdo.",
+        "Nulidad de pleno derecho.",
+        "Intervención económica."
+      ],
+      correctIndex: 1
+    },
+    {
+      id: 50,
+      text: "En un contrato de servicios, el área usuaria observa la prestación porque no cumple las especificaciones. El proveedor corrige y entrega nuevamente dentro del plazo. ¿Qué debe hacer el área usuaria?",
+      options: [
+        "Mantener la observación sin evaluar la nueva entrega.",
+        "Revisar la subsanación y, de corresponder, otorgar la conformidad.",
+        "Resolver el contrato de inmediato.",
+        "Aplicar la nulidad del contrato."
+      ],
+      correctIndex: 1
+    },
+
+    // --- Obras: expediente técnico, roles, adelantos, adicionales, ampliaciones, JPRD ---
+    {
+      id: 51,
+      text: "Antes de iniciar la ejecución de una obra pública, la entidad debe contar con un expediente técnico debidamente aprobado. ¿Cuál es una de las características clave de este expediente?",
+      options: [
+        "Puede omitirse si el contratista tiene experiencia.",
+        "Contiene los planos, metrados, especificaciones técnicas y presupuesto que sustentan la obra.",
+        "Solo incluye una descripción general sin detalles técnicos.",
+        "Es elaborado exclusivamente por el contratista."
+      ],
+      correctIndex: 1
+    },
+    {
+      id: 52,
+      text: "En la ejecución de una obra, ¿quién es el responsable directo de la ejecución técnica en el frente de obra por parte del contratista?",
+      options: [
+        "El residente de obra.",
+        "El supervisor de obra.",
+        "El titular de la entidad.",
+        "El responsable de la DEC."
+      ],
+      correctIndex: 0
+    },
+    {
+      id: 53,
+      text: "En una obra pública, el supervisor de obra detecta un problema de seguridad que requiere paralizar temporalmente los trabajos. ¿Cómo debe actuar frente a la entidad?",
+      options: [
+        "Continuar la obra para no afectar el plazo.",
+        "Informar a la entidad, sustentar la necesidad de suspensión o paralización y coordinar las medidas necesarias.",
+        "Resolver el contrato de inmediato.",
+        "Aumentar el costo de la obra sin comunicar."
+      ],
+      correctIndex: 1
+    },
+    {
+      id: 54,
+      text: "Un contratista solicita adelantos en un contrato de obra. ¿Qué condición general debe cumplir para que la entidad pueda entregar adelantos de acuerdo con el Reglamento?",
+      options: [
+        "No se exige ninguna condición.",
+        "Debe cumplir con la presentación de la garantía correspondiente por el monto del adelanto.",
+        "Solo presentar una carta simple.",
+        "Presentar un informe de avance de obra."
+      ],
+      correctIndex: 1
+    },
+    {
+      id: 55,
+      text: "En una obra, surgen metrados adicionales inevitables para culminar el proyecto conforme a la finalidad pública. ¿Cómo se debe tratar esta situación?",
+      options: [
+        "Reducir el alcance de la obra.",
+        "Tratarla como prestación adicional de obra, dentro de los límites y autorizaciones previstos por la Ley y el Reglamento.",
+        "Anular el contrato.",
+        "Solicitar al contratista que asuma los costos sin reconocimiento."
+      ],
+      correctIndex: 1
+    },
+    {
+      id: 56,
+      text: "La entidad considera necesario cambiar a parte del personal clave del contratista en una obra (plantel técnico) por situaciones justificadas. ¿Bajo qué figura de modificación se enmarca este cambio?",
+      options: [
+        "Adelanto directo.",
+        "Sustitución del plantel técnico.",
+        "Reducción de la obra.",
+        "Nulidad de contrato."
+      ],
+      correctIndex: 1
+    },
+    {
+      id: 57,
+      text: "Se ha producido un retraso en la obra por causas atribuibles a la entidad, como retraso en la entrega del terreno. El contratista solicita una ampliación de plazo. ¿Qué corresponde según la normativa?",
+      options: [
+        "Negar toda ampliación.",
+        "Evaluar y, de ser procedente, aprobar la ampliación de plazo, sin aplicar penalidades por ese periodo.",
+        "Aplicar penalidades al contratista.",
+        "Reducir el alcance de la obra."
+      ],
+      correctIndex: 1
+    },
+    {
+      id: 58,
+      text: "Al finalizar una obra, se realiza el pago de la última valorización y se entrega formalmente la obra al usuario. ¿Qué acto debe realizar la entidad para cerrar esta fase antes de la liquidación?",
+      options: [
+        "Emitir la conformidad de bienes.",
+        "Emitir el acta de recepción de obra.",
+        "Emitir una adenda al contrato.",
+        "Solicitar la nulidad del proceso."
+      ],
+      correctIndex: 1
+    },
+    {
+      id: 59,
+      text: "En un contrato de obra con Juntas de Prevención y Resolución de Disputas (JPRD), surge una controversia técnica sobre metrados. ¿Cuál es la función principal de la JPRD?",
+      options: [
+        "Emitir sentencias judiciales.",
+        "Prevenir y resolver controversias durante la ejecución de la obra mediante decisiones especializadas.",
+        "Diseñar las bases del procedimiento de selección.",
+        "Modificar el expediente técnico sin participación de la entidad."
+      ],
+      correctIndex: 1
+    },
+    {
+      id: 60,
+      text: "Durante la ejecución de una obra, la entidad detecta incumplimientos graves y decide intervenir económicamente el contrato. ¿Cuál es el objetivo de esta intervención?",
+      options: [
+        "Transferir la obra al contratista.",
+        "Asegurar la continuidad de la obra y la adecuada administración de los recursos, tomando control de los pagos.",
+        "Cancelar definitivamente la obra.",
+        "Evitar todo control interno."
+      ],
+      correctIndex: 1
+    },
+
+    // --- Principios, enfoques, PLADICOP, sostenibilidad, innovación, gobierno a gobierno, exclusiones ---
+    {
+      id: 61,
+      text: "En un procedimiento de selección, la entidad publica toda la información relevante en PLADICOP, con bases, consultas, absoluciones y resultados. Además, el sistema es de fácil acceso para proveedores. ¿Qué principios se reflejan principalmente?",
+      options: [
+        "Legalidad y presunción de veracidad.",
+        "Transparencia, publicidad y facilidad de uso.",
+        "Causalidad y equidad.",
+        "Innovación y causalidad."
+      ],
+      correctIndex: 1
+    },
+    {
+      id: 62,
+      text: "Una entidad diseña procesos de contratación para lograr resultados medibles en la mejora de los servicios al ciudadano, vinculando el presupuesto a productos y resultados. ¿Qué enfoque aplica principalmente?",
+      options: [
+        "Enfoque de gestión por resultados.",
+        "Enfoque de integridad.",
+        "Enfoque de sostenibilidad.",
+        "Enfoque de innovación."
+      ],
+      correctIndex: 0
+    },
+    {
+      id: 63,
+      text: "Una entidad decide adquirir un bien con tecnología obsoleta, solo por ser el más barato, a pesar de que no responde adecuadamente a la finalidad del servicio público. ¿Qué principio se estaría afectando?",
+      options: [
+        "Principio de valor por dinero y de vigencia tecnológica.",
+        "Principio de causalidad.",
+        "Principio de libertad de concurrencia.",
+        "Principio de publicidad."
+      ],
+      correctIndex: 0
+    },
+    {
+      id: 64,
+      text: "En la contratación pública, la entidad decide dar preferencia a soluciones que generen nuevos productos o mejoren significativamente los existentes, trabajando con proveedores que propongan innovación. ¿Qué figura conceptualmente se aplica?",
+      options: [
+        "Compra Pública de Innovación (CPI) o similares mecanismos de innovación.",
+        "Procedimiento sancionador.",
+        "Contratación directa por emergencia.",
+        "Uso de catálogos obligatorios."
+      ],
+      correctIndex: 0
+    },
+    {
+      id: 65,
+      text: "La entidad está analizando contrataciones que se realizan gobierno a gobierno para un proyecto de infraestructura. ¿Cómo se consideran estos contratos respecto del ámbito de la Ley 32069?",
+      options: [
+        "Están excluidos del ámbito de la Ley bajo supuestos específicos, pero deben respetar los principios generales.",
+        "Son idénticos a los contratos menores.",
+        "No tienen regulación alguna.",
+        "Los celebra exclusivamente el Parlamento."
+      ],
+      correctIndex: 0
+    },
+    {
+      id: 66,
+      text: "Una entidad requiere contratar un servicio público esencial para el cual solo existe un proveedor posible (monopolio legal). ¿Qué figura puede justificar la contratación no competitiva?",
+      options: [
+        "Contratación directa por desabastecimiento inminente.",
+        "Procedimiento de selección competitivo.",
+        "Supuesto de proveedor único, debidamente sustentado.",
+        "Subasta inversa electrónica."
+      ],
+      correctIndex: 2
+    },
+    {
+      id: 67,
+      text: "En un hospital público se identifica un riesgo de desabastecimiento de un medicamento esencial por retrasos en los procesos competitivos. La DEC sustenta que solo un proveedor puede entregar el medicamento a tiempo. ¿Qué permite la Ley respecto de los impedimentos?",
+      options: [
+        "Nada, los impedimentos son absolutos.",
+        "La entidad puede inaplicar temporalmente un impedimento a ese proveedor, bajo condiciones estrictas y por riesgo de desabastecimiento.",
+        "Debe convocarse un proceso internacional.",
+        "Debe esperar al siguiente año fiscal."
+      ],
+      correctIndex: 1
+    },
+    {
+      id: 68,
+      text: "Una entidad ha suscrito un convenio de colaboración con otra entidad pública para que esta última brinde un servicio propio de su función sin fines de lucro. ¿Cómo se considera este convenio frente al ámbito de la Ley 32069?",
+      options: [
+        "Está excluido del ámbito de la Ley como supuesto de convenio de colaboración sin fines de lucro, cumpliendo las condiciones.",
+        "Es un contrato de bienes.",
+        "Es un contrato de obras.",
+        "Es un procedimiento de selección simplificado."
+      ],
+      correctIndex: 0
+    },
+    {
+      id: 69,
+      text: "La entidad contrata un servicio financiero regulado como parte de operaciones bancarias específicas (distintas de seguros o leasing regulado por endeudamiento público). ¿Cómo se considera esta contratación frente al ámbito de la Ley 32069?",
+      options: [
+        "Se encuentra excluida del ámbito de aplicación de la Ley como contrato bancario o financiero, salvo excepciones.",
+        "Debe seguir siempre la Ley de Contrataciones.",
+        "No tiene norma aplicable.",
+        "Es un contrato menor obligatorio."
+      ],
+      correctIndex: 0
+    },
+    {
+      id: 70,
+      text: "En la aplicación de la Ley General de Contrataciones Públicas, los principios sirven, entre otras funciones, como criterio de interpretación e integración ante vacíos normativos. ¿Qué implica esto para los operadores?",
+      options: [
+        "Que solo pueden aplicar la literalidad de los artículos.",
+        "Que deben usar los principios para orientar decisiones discrecionales hacia la finalidad pública.",
+        "Que los principios solo son decorativos.",
+        "Que los principios prevalecen siempre sobre la Constitución."
+      ],
+      correctIndex: 1
+    },
+
+    // --- Casos sobre PLADICOP, historial, compradores, niveles, ética / integridad ---
+    {
+      id: 71,
+      text: "Un comprador público detecta que un proveedor intenta ofrecerle un beneficio económico para favorecerlo en la evaluación de ofertas. ¿Qué debe hacer el comprador público conforme al enfoque de integridad?",
+      options: [
+        "Aceptar el beneficio pero mantener la objetividad.",
+        "Rechazar el beneficio y reportar el hecho a las autoridades competentes.",
+        "Ignorar el hecho sin reportarlo.",
+        "Suspender el proceso sin informar."
+      ],
+      correctIndex: 1
+    },
+    {
+      id: 72,
+      text: "La entidad quiere medir el desempeño de sus proveedores, considerando puntualidad, penalidades y sanciones. ¿Qué mecanismo previsto en el Reglamento permite clasificar a los proveedores por reputación?",
+      options: [
+        "El Mecanismo valorativo de la reputación de los proveedores del RNP.",
+        "La evaluación anual del MEF.",
+        "Las encuestas de satisfacción del usuario.",
+        "Las actas de recepción."
+      ],
+      correctIndex: 0
+    },
+    {
+      id: 73,
+      text: "Un proveedor con categoría A en el mecanismo de reputación desea participar en un procedimiento de selección. ¿Qué ventaja puede obtener según el Reglamento?",
+      options: [
+        "Exoneración de presentar oferta técnica.",
+        "Puntaje en el factor de evaluación de desempeño, según lo previsto en las bases.",
+        "Exoneración de garantías de seriedad.",
+        "Automática adjudicación de la Buena Pro."
+      ],
+      correctIndex: 1
+    },
+    {
+      id: 74,
+      text: "Un comprador público no se ha certificado y aun así está conduciendo procesos de contratación complejos como parte de la DEC. ¿Qué riesgo genera esta situación?",
+      options: [
+        "Ninguno, la certificación es solo formal.",
+        "Que la entidad esté incumpliendo la normativa sobre profesionalización y lineamientos de la DGA y el OECE.",
+        "Solo riesgo contable.",
+        "Que los proveedores queden exonerados de obligaciones."
+      ],
+      correctIndex: 1
+    },
+    {
+      id: 75,
+      text: "La entidad utiliza PLADICOP para registrar el PAC, las actuaciones preparatorias, la fase de selección y la ejecución contractual. ¿Qué ventaja trae para el control y la supervisión del OECE?",
+      options: [
+        "Permite al OECE acceder a datos integrados, analizar riesgos y supervisar selectivamente los procesos.",
+        "Evita cualquier tipo de supervisión.",
+        "Limita la competencia.",
+        "Desaparece la responsabilidad de la entidad."
+      ],
+      correctIndex: 0
+    },
+    {
+      id: 76,
+      text: "Un proceso de contratación fue supervisado por el OECE y se recomendaron medidas correctivas. La autoridad de la gestión administrativa decide no implementarlas. ¿Qué implica esta decisión?",
+      options: [
+        "No tiene efecto alguno.",
+        "Puede implicar responsabilidad de la autoridad por no atender recomendaciones de supervisión en el marco de sus obligaciones.",
+        "Es una facultad discrecional sin responsabilidad.",
+        "Traslada toda la responsabilidad al OECE."
+      ],
+      correctIndex: 1
+    },
+    {
+      id: 77,
+      text: "En una compra corporativa, varias entidades agrupan su demanda de bienes similares para obtener mejores condiciones. ¿Qué se busca con este mecanismo?",
+      options: [
+        "Reducir la publicidad.",
+        "Maximizar el valor por dinero mediante economías de escala.",
+        "Evitar la participación de proveedores pequeños.",
+        "Impedir el control ciudadano."
+      ],
+      correctIndex: 1
+    },
+    {
+      id: 78,
+      text: "Un funcionario de la entidad ha sido sancionado con inhabilitación administrativa firme por infracciones relacionadas con contrataciones públicas. Tiempo después, desea inscribirse como proveedor del Estado. ¿Qué indica la Ley?",
+      options: [
+        "No tiene impedimento.",
+        "Tiene impedimento para ser proveedor en razón de la sanción e inscripción en los registros correspondientes.",
+        "Solo tiene impedimento para obras.",
+        "Solo tiene impedimento si contrata con su antigua entidad."
+      ],
+      correctIndex: 1
+    },
+    {
+      id: 79,
+      text: "En la etapa de actuaciones preparatorias, la entidad define herramientas de gestión de riesgos para las contrataciones públicas. ¿Cuál es el objetivo principal de esta gestión de riesgos?",
+      options: [
+        "Solo identificar riesgos financieros.",
+        "Identificar, analizar y tratar riesgos que puedan afectar el cumplimiento de la finalidad pública de la contratación.",
+        "Aumentar la carga administrativa.",
+        "Evitar la participación de nuevos proveedores."
+      ],
+      correctIndex: 1
+    },
+    {
+      id: 80,
+      text: "Una entidad busca que la participación en sus procesos sea amplia, evitando exigencias innecesarias y promoviendo la libre participación de proveedores. ¿Qué principio aplica?",
+      options: [
+        "Principio de libertad de concurrencia.",
+        "Principio de causalidad.",
+        "Principio de equidad.",
+        "Principio de innovación."
+      ],
+      correctIndex: 0
+    },
+
+    // --- Más casos de ejecución, pagos, historial, etc. ---
+    {
+      id: 81,
+      text: "Tras otorgar la conformidad a un servicio, la entidad demora injustificadamente el trámite de pago al contratista. ¿Qué principio resultaría afectado?",
+      options: [
+        "Principio de valor por dinero.",
+        "Principio de eficacia y eficiencia en el uso de recursos públicos.",
+        "Principio de transparencia.",
+        "Principio de causalidad."
+      ],
+      correctIndex: 1
+    },
+    {
+      id: 82,
+      text: "La DEC revisa la conformidad emitida por el área usuaria antes de procesar documentos de pago. ¿Cuál es el objeto de esta revisión según el Reglamento?",
+      options: [
+        "Verificar el cumplimiento de la normativa de contratación pública en la ejecución contractual.",
+        "Modificar el objeto del contrato.",
+        "Cambiar las bases del procedimiento.",
+        "Reemplazar la opinión del área usuaria sobre aspectos técnicos."
+      ],
+      correctIndex: 0
+    },
+    {
+      id: 83,
+      text: "Un proveedor extranjero no domiciliado desea participar en una licitación de bienes en Perú. ¿Qué condición mínima debe cumplir respecto de la representación legal según el Reglamento del RNP?",
+      options: [
+        "No requiere representante.",
+        "Debe contar con representante legal con facultades para actuar ante entidades públicas, acreditado conforme a la autoridad de su país de origen.",
+        "Solo requiere un traductor.",
+        "Debe tener sucursal obligatoria en Perú."
+      ],
+      correctIndex: 1
+    },
+    {
+      id: 84,
+      text: "En la etapa de programación, la entidad incluye en el CMN una contratación que finalmente no podrá ejecutarse en el ejercicio por cambios de prioridades. ¿Qué puede hacer con el PAC del CMN?",
+      options: [
+        "Nada, el PAC es inmodificable.",
+        "Modificar el PAC para excluir dicha contratación siguiendo los supuestos de modificación previstos.",
+        "Realizar la contratación sin presupuesto.",
+        "Trasladar el contrato al año siguiente automáticamente."
+      ],
+      correctIndex: 1
+    },
+    {
+      id: 85,
+      text: "Una entidad ha suscrito varios contratos menores para el mismo tipo de servicio a lo largo del año, superando en conjunto el umbral para un procedimiento competitivo. ¿Qué podría determinar un órgano de control?",
+      options: [
+        "Que se trató de una estrategia válida.",
+        "Que existe un posible fraccionamiento de la contratación.",
+        "Que se trata de una compra corporativa.",
+        "Que el PAC está bien elaborado."
+      ],
+      correctIndex: 1
+    },
+    {
+      id: 86,
+      text: "Un proveedor solicita la corrección de información errónea que figura en su FUP respecto de penalidades que ya fueron levantadas. ¿Qué debe hacer según el Reglamento?",
+      options: [
+        "Esperar a una nueva inscripción en el RNP.",
+        "Solicitar la corrección al OECE conforme al procedimiento establecido.",
+        "No hacer nada, la FUP es inmodificable.",
+        "Presentar una demanda judicial obligatoria."
+      ],
+      correctIndex: 1
+    },
+    {
+      id: 87,
+      text: "Tras varios intentos de contratación, la entidad decide revisar internamente sus procesos, tiempos, documentos y resultados para mejorar y simplificar trámites. ¿Qué principio o enfoque se refuerza con esta práctica?",
+      options: [
+        "Enfoque de gestión por resultados y principio de eficacia y eficiencia.",
+        "Solo el principio de causalidad.",
+        "Únicamente el enfoque de innovación.",
+        "Principio de presunción de veracidad."
+      ],
+      correctIndex: 0
+    },
+    {
+      id: 88,
+      text: "Una entidad recibe alertas de vigilancia ciudadana respecto de un procedimiento de selección. ¿Qué puede hacer el OECE frente a este caso según el Reglamento?",
+      options: [
+        "Ignorar las alertas.",
+        "Incluir el procedimiento dentro de sus acciones de supervisión selectiva o aleatoria.",
+        "Suspender definitivamente la entidad.",
+        "Modificar las bases de oficio."
+      ],
+      correctIndex: 1
+    },
+    {
+      id: 89,
+      text: "La DEC construye la estrategia de contratación considerando el requerimiento, el estudio de mercado, los riesgos, la modalidad de pago, los requisitos de calificación y los factores de evaluación. ¿Cuál es el objetivo central de esta estrategia?",
+      options: [
+        "Solo reducir el tiempo del proceso.",
+        "Lograr una contratación eficiente, competitiva y alineada con el valor por dinero.",
+        "Evitar la participación de proveedores extranjeros.",
+        "Eliminar toda discrecionalidad técnica."
+      ],
+      correctIndex: 1
+    },
+    {
+      id: 90,
+      text: "En un procedimiento de selección con diálogo competitivo, la entidad convoca con un requerimiento preliminar centrado en la necesidad y resultados esperados. ¿Qué se busca con esta modalidad?",
+      options: [
+        "Definir detalladamente la solución sin participación de los postores.",
+        "Explorar, junto con los participantes, soluciones innovadoras o complejas antes de presentar las ofertas finales.",
+        "Evitar la transparencia.",
+        "Reducir la competencia a un solo postor."
+      ],
+      correctIndex: 1
+    }
+  ];
+
+  // ==============================
+  // ESTADO DEL EXAMEN
+  // ==============================
+  let currentExamQuestions = [];
+  let currentAnswers = [];
+  let currentIndex = 0;
+  let timerSecondsRemaining = 0;
+  let timerInterval = null;
+  let examInProgress = false;
+  let examStartTimestamp = null;
+
+  // ==============================
+  // ELEMENTOS DEL DOM
+  // ==============================
+  const startBtn = document.getElementById("startBtn");
+  const finishBtn = document.getElementById("finishBtn");
+  const restartBtn = document.getElementById("restartBtn");
+  const prevBtn = document.getElementById("prevBtn");
+  const nextBtn = document.getElementById("nextBtn");
+
+  const timerDisplay = document.getElementById("timerDisplay");
+  const timerHint = document.getElementById("timerHint");
+  const questionNav = document.getElementById("questionNav");
+
+  const questionNumberEl = document.getElementById("questionNumber");
+  const questionProgressEl = document.getElementById("questionProgress");
+  const progressFillEl = document.getElementById("progressFill");
+  const questionTextEl = document.getElementById("questionText");
+  const optionsContainer = document.getElementById("optionsContainer");
+
+  const resultsSection = document.getElementById("resultsSection");
+  const resultSummaryEl = document.getElementById("resultSummary");
+  const scorePill = document.getElementById("scorePill");
+  const levelPill = document.getElementById("levelPill");
+  const scoreValueEl = document.getElementById("scoreValue");
+  const levelValueEl = document.getElementById("levelValue");
+  const correctValueEl = document.getElementById("correctValue");
+  const timeUsedValueEl = document.getElementById("timeUsedValue");
+
+  const historyTableBody = document.getElementById("historyTableBody");
+
+  // ==============================
+  // LOCALSTORAGE: HISTORIAL E IDs USADOS
+  // ==============================
+  const HISTORY_KEY = "oeceExamHistory";
+  const USED_IDS_KEY = "oeceUsedQuestionIds";
+
+  function loadHistory() {
+    try {
+      const raw = localStorage.getItem(HISTORY_KEY);
+      if (!raw) return [];
+      return JSON.parse(raw) || [];
+    } catch (e) {
+      console.error("Error al cargar historial:", e);
+      return [];
+    }
+  }
+
+  function saveHistory(history) {
+    try {
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+    } catch (e) {
+      console.error("Error al guardar historial:", e);
+    }
+  }
+
+  function loadUsedIds() {
+    try {
+      const raw = localStorage.getItem(USED_IDS_KEY);
+      if (!raw) return [];
+      return JSON.parse(raw) || [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function saveUsedIds(ids) {
+    try {
+      localStorage.setItem(USED_IDS_KEY, JSON.stringify(ids));
+    } catch (e) {
+      console.error("Error al guardar usedIds:", e);
+    }
+  }
+
+  function renderHistoryTable() {
+    const history = loadHistory();
+    historyTableBody.innerHTML = "";
+
+    if (!history.length) {
+      const tr = document.createElement("tr");
+      const td = document.createElement("td");
+      td.colSpan = 5;
+      td.textContent = "Aún no hay intentos registrados.";
+      td.classList.add("muted");
+      tr.appendChild(td);
+      historyTableBody.appendChild(tr);
+      return;
+    }
+
+    // mostrar máximo 15 últimos
+    const recent = history.slice(-15).reverse();
+    for (const attempt of recent) {
+      const tr = document.createElement("tr");
+
+      const dateTd = document.createElement("td");
+      const dateObj = new Date(attempt.timestamp || Date.now());
+      dateTd.textContent = dateObj.toLocaleString();
+      tr.appendChild(dateTd);
+
+      const scoreTd = document.createElement("td");
+      scoreTd.textContent = attempt.score.toFixed(2);
+      tr.appendChild(scoreTd);
+
+      const levelTd = document.createElement("td");
+      const tag = document.createElement("span");
+      tag.classList.add("tag");
+      if (attempt.levelStatus === "apto") {
+        tag.classList.add("ok");
+      } else {
+        tag.classList.add("fail");
+      }
+      tag.textContent = attempt.levelLabel;
+      levelTd.appendChild(tag);
+      tr.appendChild(levelTd);
+
+      const correctTd = document.createElement("td");
+      correctTd.textContent = `${attempt.correct}/${attempt.total}`;
+      tr.appendChild(correctTd);
+
+      const timeTd = document.createElement("td");
+      const mins = (attempt.durationSeconds / 60).toFixed(1);
+      timeTd.textContent = mins;
+      tr.appendChild(timeTd);
+
+      historyTableBody.appendChild(tr);
+    }
+  }
+
+  // ==============================
+  // UTILIDADES
+  // ==============================
+  function shuffle(array) {
+    const arr = array.slice();
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  function formatTime(seconds) {
+    const s = Math.max(0, seconds);
+    const mins = Math.floor(s / 60);
+    const secs = s % 60;
+    return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+  }
+
+  function classifyScore(score) {
+    // Niveles:
+    // Básico: 30+
+    // Intermedio: 43+
+    // Avanzado: 58+
+    if (score >= 58) {
+      return { levelLabel: "Nivel avanzado", levelStatus: "apto" };
+    } else if (score >= 43) {
+      return { levelLabel: "Nivel intermedio", levelStatus: "apto" };
+    } else if (score >= 30) {
+      return { levelLabel: "Nivel básico", levelStatus: "apto" };
+    } else {
+      return { levelLabel: "No apto", levelStatus: "no_apto" };
+    }
+  }
+
+  // ==============================
+  // GENERAR NUEVO EXAMEN
+  // ==============================
+  function generateNewExamQuestions() {
+    const allIds = questionBank.map(q => q.id);
+    let usedIds = loadUsedIds().filter(id => allIds.includes(id));
+
+    let availableIds = allIds.filter(id => !usedIds.includes(id));
+    if (availableIds.length < QUESTIONS_PER_EXAM) {
+      // Reset cuando ya se han usado casi todas
+      usedIds = [];
+      availableIds = allIds.slice();
+    }
+
+    const shuffledAvailable = shuffle(availableIds);
+    const selectedIds = shuffledAvailable.slice(0, QUESTIONS_PER_EXAM);
+
+    const newUsedIds = usedIds.concat(selectedIds);
+    saveUsedIds(newUsedIds);
+
+    const selectedQuestions = selectedIds.map(id =>
+      questionBank.find(q => q.id === id)
+    );
+    return selectedQuestions;
+  }
+
+  // ==============================
+  // TIMER
+  // ==============================
+  function startTimer() {
+    timerSecondsRemaining = EXAM_DURATION_SECONDS;
+    timerDisplay.textContent = formatTime(timerSecondsRemaining);
+    timerHint.textContent = "El examen está en curso. Gestiona bien tu tiempo.";
+    updateTimerStyle();
+
+    if (timerInterval) clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+      timerSecondsRemaining--;
+      if (timerSecondsRemaining <= 0) {
+        timerSecondsRemaining = 0;
+        timerDisplay.textContent = formatTime(0);
+        updateTimerStyle();
+        clearInterval(timerInterval);
+        timerInterval = null;
+        if (examInProgress) {
+          finishExam(true); // auto
+        }
+        return;
+      }
+      timerDisplay.textContent = formatTime(timerSecondsRemaining);
+      updateTimerStyle();
+    }, 1000);
+  }
+
+  function updateTimerStyle() {
+    const total = EXAM_DURATION_SECONDS;
+    const ratio = timerSecondsRemaining / total;
+    timerDisplay.classList.remove("timer-warning", "timer-danger");
+    if (ratio <= 0.1) {
+      timerDisplay.classList.add("timer-danger");
+    } else if (ratio <= 0.25) {
+      timerDisplay.classList.add("timer-warning");
+    }
+  }
+
+  // ==============================
+  // RENDERIZADO DE PREGUNTAS
+  // ==============================
+  function renderQuestion() {
+    if (!currentExamQuestions.length) return;
+
+    const q = currentExamQuestions[currentIndex];
+    const answer = currentAnswers[currentIndex];
+
+    questionNumberEl.textContent = `Pregunta ${currentIndex + 1} de ${QUESTIONS_PER_EXAM}`;
+    const answeredCount = currentAnswers.filter(a => a !== null && a !== undefined).length;
+    questionProgressEl.textContent = `Respondidas: ${answeredCount} / ${QUESTIONS_PER_EXAM}`;
+    const progressRatio = answeredCount / QUESTIONS_PER_EXAM;
+    progressFillEl.style.width = (progressRatio * 100).toFixed(1) + "%";
+
+    questionTextEl.textContent = q.text;
+
+    optionsContainer.innerHTML = "";
+    q.options.forEach((opt, idx) => {
+      const label = document.createElement("label");
+      label.classList.add("option");
+
+      const input = document.createElement("input");
+      input.type = "radio";
+      input.name = "option";
+      input.value = idx;
+      if (answer === idx) {
+        input.checked = true;
+        label.classList.add("selected");
+      }
+
+      input.addEventListener("change", () => {
+        currentAnswers[currentIndex] = idx;
+        renderQuestionNav();
+        renderQuestion(); // refrescar estilos
+      });
+
+      const span = document.createElement("span");
+      span.classList.add("label");
+      span.textContent = opt;
+
+      label.appendChild(input);
+      label.appendChild(span);
+      optionsContainer.appendChild(label);
+    });
+
+    prevBtn.disabled = currentIndex === 0 || !examInProgress;
+    nextBtn.disabled = currentIndex === QUESTIONS_PER_EXAM - 1 || !examInProgress;
+    finishBtn.disabled = !examInProgress;
+    restartBtn.disabled = examInProgress;
+  }
+
+  function renderQuestionNav() {
+    questionNav.innerHTML = "";
+    if (!currentExamQuestions.length) return;
+
+    for (let i = 0; i < QUESTIONS_PER_EXAM; i++) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.textContent = i + 1;
+      btn.classList.add("q-badge");
+
+      if (currentAnswers[i] !== null && currentAnswers[i] !== undefined) {
+        btn.classList.add("answered");
+      }
+      if (i === currentIndex) {
+        btn.classList.add("current");
+      }
+
+      btn.addEventListener("click", () => {
+        if (!examInProgress) return;
+        currentIndex = i;
+        renderQuestion();
+        renderQuestionNav();
+      });
+
+      questionNav.appendChild(btn);
+    }
+  }
+
+  // ==============================
+  // INICIO / FINALIZACIÓN DE EXAMEN
+  // ==============================
+  function startExam() {
+    currentExamQuestions = generateNewExamQuestions();
+    currentAnswers = new Array(QUESTIONS_PER_EXAM).fill(null);
+    currentIndex = 0;
+    examInProgress = true;
+    examStartTimestamp = Date.now();
+
+    startTimer();
+    renderQuestion();
+    renderQuestionNav();
+
+    finishBtn.disabled = false;
+    restartBtn.disabled = true;
+    prevBtn.disabled = true;
+    nextBtn.disabled = false;
+    resultsSection.style.display = "none";
+    timerHint.textContent = "El examen está en curso. Puedes navegar entre preguntas.";
+  }
+
+  function finishExam(auto = false) {
+    if (!examInProgress) return;
+    examInProgress = false;
+
+    if (timerInterval) {
+      clearInterval(timerInterval);
+      timerInterval = null;
+    }
+
+    // Calcular resultados
+    let correct = 0;
+    for (let i = 0; i < QUESTIONS_PER_EXAM; i++) {
+      const q = currentExamQuestions[i];
+      const ans = currentAnswers[i];
+      if (ans === q.correctIndex) correct++;
+    }
+
+    const pointsPerQuestion = 100 / QUESTIONS_PER_EXAM;
+    const score = correct * pointsPerQuestion;
+    const classification = classifyScore(score);
+    const durationSeconds = examStartTimestamp
+      ? Math.max(0, Math.round((Date.now() - examStartTimestamp) / 1000))
+      : EXAM_DURATION_SECONDS - timerSecondsRemaining;
+
+    // Mostrar resultados
+    scoreValueEl.textContent = score.toFixed(2) + " / 100";
+    levelValueEl.textContent = classification.levelLabel;
+    correctValueEl.textContent = `${correct} / ${QUESTIONS_PER_EXAM}`;
+    timeUsedValueEl.textContent = `${(durationSeconds / 60).toFixed(1)} min`;
+
+    scorePill.classList.remove("level-ok", "level-fail");
+    levelPill.classList.remove("level-ok", "level-fail");
+    if (classification.levelStatus === "apto") {
+      scorePill.classList.add("level-ok");
+      levelPill.classList.add("level-ok");
+    } else {
+      scorePill.classList.add("level-fail");
+      levelPill.classList.add("level-fail");
+    }
+
+    resultSummaryEl.textContent = auto
+      ? "El tiempo del examen terminó automáticamente. Estos son tus resultados:"
+      : "Has finalizado el simulacro. Estos son tus resultados:";
+
+    resultsSection.style.display = "block";
+
+    // Guardar historial
+    const history = loadHistory();
+    history.push({
+      timestamp: Date.now(),
+      score,
+      correct,
+      total: QUESTIONS_PER_EXAM,
+      durationSeconds,
+      levelLabel: classification.levelLabel,
+      levelStatus: classification.levelStatus
+    });
+    saveHistory(history);
+    renderHistoryTable();
+
+    // Estado botones
+    finishBtn.disabled = true;
+    restartBtn.disabled = false;
+    prevBtn.disabled = true;
+    nextBtn.disabled = true;
+    timerHint.textContent = "Examen finalizado. Puedes revisar tus resultados y lanzar un nuevo intento.";
+  }
+
+  // ==============================
+  // EVENTOS
+  // ==============================
+  startBtn.addEventListener("click", () => {
+    if (examInProgress && !confirm("Ya tienes un examen en curso. ¿Deseas reiniciarlo y perder las respuestas actuales?")) {
+      return;
+    }
+    startExam();
+  });
+
+  finishBtn.addEventListener("click", () => {
+    if (!examInProgress) return;
+    if (confirm("¿Seguro que deseas finalizar el examen y ver tus resultados?")) {
+      finishExam(false);
+    }
+  });
+
+  restartBtn.addEventListener("click", () => {
+    if (examInProgress && !confirm("Tienes un examen en curso. ¿Deseas iniciar uno nuevo?")) return;
+    startExam();
+  });
+
+  prevBtn.addEventListener("click", () => {
+    if (!examInProgress) return;
+    if (currentIndex > 0) {
+      currentIndex--;
+      renderQuestion();
+      renderQuestionNav();
+    }
+  });
+
+  nextBtn.addEventListener("click", () => {
+    if (!examInProgress) return;
+    if (currentIndex < QUESTIONS_PER_EXAM - 1) {
+      currentIndex++;
+      renderQuestion();
+      renderQuestionNav();
+    }
+  });
+
+  // Inicialización
+  (function init() {
+    timerDisplay.textContent = "--:--";
+    renderHistoryTable();
+  })();
+</script>
+</body>
+</html>
